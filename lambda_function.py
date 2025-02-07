@@ -33,28 +33,31 @@ def classify_number(event, context):
         query_params = event.get("queryStringParameters", {})
         number_str = query_params.get("number", "")
 
-        if not number_str.isdigit():
+        # Check if the input is a valid number (negative, float or integer)
+        try:
+            # Try to convert the number to a float (handles both integer and floating-point numbers)
+            number = float(number_str)
+        except ValueError:
             return {
                 "statusCode": 400,
                 "headers": {"Content-Type": "application/json"},
                 "body": json.dumps({"number": number_str, "error": True})
             }
 
-        number = int(number_str)
-
+        # Calculate properties for valid number inputs (including negative and float)
         properties = []
-        if is_armstrong(number):
+        if is_armstrong(abs(int(number))):  # Only check Armstrong for the absolute value
             properties.append("armstrong")
         
         properties.append("odd" if number % 2 != 0 else "even")
 
         response_body = {
             "number": number,
-            "is_prime": is_prime(number),
-            "is_perfect": is_perfect(number),
+            "is_prime": is_prime(int(number)),
+            "is_perfect": is_perfect(int(number)),
             "properties": properties,
-            "digit_sum": sum(int(d) for d in str(number)),
-            "fun_fact": get_fun_fact(number)
+            "digit_sum": sum(int(d) for d in str(abs(int(number)))),  # Sum digits of the absolute value
+            "fun_fact": get_fun_fact(int(number))  # Fun fact for the absolute value
         }
 
         return {
